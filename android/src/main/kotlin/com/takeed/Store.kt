@@ -9,13 +9,14 @@ internal object Store {
 
     private fun prefs(context: Context) = context.getSharedPreferences(FILE, Context.MODE_PRIVATE)
 
-    fun configure(context: Context, appId: String, apiUrl: String) {
-        prefs(context).edit().putString("app_id", appId).putString("api_url", apiUrl).apply()
+    /** The Takeed service. Fixed: the SDK talks to nothing else. */
+    const val API_URL = "https://takeed-iq.com"
+
+    fun configure(context: Context, appId: String) {
+        prefs(context).edit().putString("app_id", appId).remove("api_url").apply()
     }
 
     fun appId(context: Context): String? = prefs(context).getString("app_id", null)
-
-    fun apiUrl(context: Context): String? = prefs(context).getString("api_url", null)
 
     fun saveToken(context: Context, token: String) {
         prefs(context).edit().putString("token", token).apply()

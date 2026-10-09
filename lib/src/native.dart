@@ -23,9 +23,8 @@ class TakeedNative {
     return result == null ? {} : Map<String, dynamic>.from(result);
   }
 
-  /// Saves the App ID and API URL for native code that runs without Flutter (background messages, clicks).
-  Future<void> configure(String appId, String apiUrl) =>
-      channel.invokeMethod('configure', {'app_id': appId, 'api_url': apiUrl});
+  /// Saves the App ID for native code that runs without Flutter (background messages, clicks).
+  Future<void> configure(String appId) => channel.invokeMethod('configure', {'app_id': appId});
 
   /// The notification that launched the app, if any.
   Future<Map<String, dynamic>?> initialClick() async {

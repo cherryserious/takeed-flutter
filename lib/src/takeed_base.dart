@@ -37,17 +37,20 @@ class Takeed {
   static Completer<void> _ready = Completer<void>();
   static String? _branch;
 
+  /// The Takeed service. Fixed: the SDK talks to nothing else.
+  static const apiUrl = 'https://takeed-iq.com';
+
   /// Set up the SDK and register this device. Call once, early in `main()`.
   ///
-  /// [apiUrl] is your Takeed address. [branch] optionally ties this device to an
-  /// app branch (its slug), so branch-targeted notifications reach it.
-  static Future<void> initialize(String appId, {required String apiUrl, String? branch}) async {
+  /// [branch] optionally ties this device to an app branch (its slug), so
+  /// branch-targeted notifications reach it.
+  static Future<void> initialize(String appId, {String? branch}) async {
     if (_ready.isCompleted) return;
     _api ??= TakeedApi(baseUrl: apiUrl, appId: appId);
     _branch = branch;
     _prefs = await SharedPreferences.getInstance();
     _native.setHandler(_onNativeCall);
-    await _native.configure(appId, apiUrl);
+    await _native.configure(appId);
     _ready.complete();
 
     await _register();

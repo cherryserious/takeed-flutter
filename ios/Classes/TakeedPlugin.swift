@@ -31,7 +31,7 @@ public class TakeedPlugin: NSObject, FlutterPlugin, UNUserNotificationCenterDele
         switch call.method {
         case "configure":
             UserDefaults.standard.set(args["app_id"] as? String, forKey: "takeed.app_id")
-            UserDefaults.standard.set(args["api_url"] as? String, forKey: "takeed.api_url")
+            UserDefaults.standard.removeObject(forKey: "takeed.api_url")
             engineReady = true
             result(nil)
         case "pushToken":
@@ -196,10 +196,9 @@ public class TakeedPlugin: NSObject, FlutterPlugin, UNUserNotificationCenterDele
     static func report(takeed: [String: Any], type: String, buttonId: String?) {
         guard let receipt = takeed["receipt_id"] as? String,
               let appId = (takeed["app_id"] as? String) ?? UserDefaults.standard.string(forKey: "takeed.app_id"),
-              let api = (takeed["api"] as? String) ?? UserDefaults.standard.string(forKey: "takeed.api_url"),
               let encoded = appId.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed),
-              let url = URL(string: api.trimmingCharacters(in: CharacterSet(charactersIn: "/")) + "/api/v1/apps/\(encoded)/events"),
-              url.scheme == "https" || url.scheme == "http" else { return }
+              // Always the Takeed service, never an address taken from the message.
+              let url = URL(string: "https://takeed-iq.com/api/v1/apps/\(encoded)/events") else { return }
 
         var request = URLRequest(url: url, timeoutInterval: 10)
         request.httpMethod = "POST"

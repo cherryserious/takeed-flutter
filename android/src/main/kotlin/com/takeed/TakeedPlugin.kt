@@ -86,7 +86,7 @@ class TakeedPlugin : FlutterPlugin, MethodChannel.MethodCallHandler, ActivityAwa
         val ctx = context ?: return result.error("no_context", "Plugin not attached", null)
         when (call.method) {
             "configure" -> {
-                Store.configure(ctx, call.argument<String>("app_id") ?: "", call.argument<String>("api_url") ?: "")
+                Store.configure(ctx, call.argument<String>("app_id") ?: "")
                 result.success(null)
             }
             "pushToken" -> pushToken(result)

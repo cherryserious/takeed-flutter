@@ -14,8 +14,8 @@ internal object Events {
     fun report(context: Context, data: Map<String, String>, type: String, buttonId: String? = null) {
         val receipt = data["takeed_receipt_id"] ?: return
         val appId = data["takeed_app_id"] ?: Store.appId(context) ?: return
-        val api = (data["takeed_api"] ?: Store.apiUrl(context) ?: return).trimEnd('/')
-        if (!api.startsWith("https://") && !api.startsWith("http://")) return
+        // Always the Takeed service, never an address taken from the message.
+        val api = Store.API_URL
 
         executor.execute {
             try {

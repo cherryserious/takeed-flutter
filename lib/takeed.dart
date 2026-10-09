@@ -4,7 +4,7 @@
 /// `OneSignal` to `Takeed`:
 ///
 /// ```dart
-/// await Takeed.initialize('YOUR-APP-ID', apiUrl: 'https://takeed.example.com');
+/// await Takeed.initialize('YOUR-APP-ID');
 /// await Takeed.Notifications.requestPermission(true);
 /// await Takeed.login('user-42');
 /// Takeed.User.addTagWithKey('plan', 'gold');

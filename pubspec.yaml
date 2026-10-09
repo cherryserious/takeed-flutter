@@ -1,7 +1,7 @@
 name: takeed
-description: Push notifications for Flutter through Takeed, with direct FCM and APNs delivery. Drop-in replacement for onesignal_flutter v5.
-version: 1.0.0
-homepage: https://github.com/cherryserious/takeed-flutter
+description: Push notifications for Flutter apps on Takeed (takeed-iq.com), with direct FCM and APNs delivery. Drop-in replacement for onesignal_flutter v5.
+version: 2.0.0
+homepage: https://takeed-iq.com
 repository: https://github.com/cherryserious/takeed-flutter
 issue_tracker: https://github.com/cherryserious/takeed-flutter/issues
 topics:

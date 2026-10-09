@@ -58,7 +58,7 @@ void main() {
   Map<String, dynamic> body(http.Request r) => jsonDecode(r.body) as Map<String, dynamic>;
 
   test('initialize registers the device with its details', () async {
-    await Takeed.initialize('app-1', apiUrl: 'https://takeed.test', branch: 'north');
+    await Takeed.initialize('app-1', branch: 'north');
 
     final register = requests.single;
     expect(register.url.toString(), 'https://takeed.test/api/v1/apps/app-1/subscriptions');
@@ -73,7 +73,7 @@ void main() {
   });
 
   test('login, tags and logout update the subscription', () async {
-    await Takeed.initialize('app-1', apiUrl: 'https://takeed.test');
+    await Takeed.initialize('app-1');
     await Takeed.login('user-42', identityHash: 'h' * 64);
     await Takeed.User.addTagWithKey('plan', 'gold');
     await Takeed.User.addTags({'visits': 3});
@@ -100,14 +100,14 @@ void main() {
 
   test('a login before initialize waits for it and is sent on registration', () async {
     final pending = Takeed.login('early');
-    await Takeed.initialize('app-1', apiUrl: 'https://takeed.test');
+    await Takeed.initialize('app-1');
     await pending;
     // The external ID reaches the server with a registration or an update.
     expect(requests.map(body).any((b) => b['external_id'] == 'early'), isTrue);
   });
 
   test('opting out tells the server and notifies observers', () async {
-    await Takeed.initialize('app-1', apiUrl: 'https://takeed.test');
+    await Takeed.initialize('app-1');
     await Takeed.Notifications.requestPermission(true);
     final changes = <bool>[];
     Takeed.User.pushSubscription.addObserver((s) => changes.add(s.current.optedIn));
@@ -119,7 +119,7 @@ void main() {
   });
 
   test('clicks reach listeners, including a click that opened the app first', () async {
-    await Takeed.initialize('app-1', apiUrl: 'https://takeed.test');
+    await Takeed.initialize('app-1');
 
     final codec = const StandardMethodCodec();
     Future<void> nativeSends(String method, Map<String, dynamic> args) =>
@@ -140,7 +140,7 @@ void main() {
   });
 
   test('foreground listeners can stop a notification from showing', () async {
-    await Takeed.initialize('app-1', apiUrl: 'https://takeed.test');
+    await Takeed.initialize('app-1');
     Takeed.Notifications.addForegroundWillDisplayListener((e) => e.preventDefault());
 
     final codec = const StandardMethodCodec();
@@ -170,7 +170,7 @@ void main() {
     Takeed.debugReset(
         native: TakeedNative(channel), api: TakeedApi(baseUrl: 'https://takeed.test', appId: 'app-1', client: client));
 
-    await Takeed.initialize('app-1', apiUrl: 'https://takeed.test');
+    await Takeed.initialize('app-1');
     await Takeed.User.addTag('a', 'b');
     expect(requests.where((r) => r.method == 'POST').length, 2);
     expect(Takeed.User.pushSubscription.id, 'sub-2');

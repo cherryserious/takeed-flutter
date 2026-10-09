@@ -6,7 +6,6 @@ Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Takeed.initialize(
     const String.fromEnvironment('TAKEED_APP_ID', defaultValue: '00000000-0000-0000-0000-000000000000'),
-    apiUrl: const String.fromEnvironment('TAKEED_API_URL', defaultValue: 'https://takeed.example.com'),
   );
   runApp(const ExampleApp());
 }

@@ -1,10 +1,10 @@
 Pod::Spec.new do |s|
   s.name             = 'takeed'
-  s.version          = '1.0.0'
+  s.version          = '2.0.0'
   s.summary          = 'Takeed push notifications for Flutter (APNs directly).'
-  s.homepage         = 'https://github.com/cherryserious/takeed-flutter'
+  s.homepage         = 'https://takeed-iq.com'
   s.license          = { :type => 'MIT', :file => '../LICENSE' }
-  s.author           = { 'Takeed' => 'https://github.com/cherryserious/takeed-flutter' }
+  s.author           = { 'Takeed' => 'https://takeed-iq.com' }
   s.source           = { :path => '.' }
   s.source_files     = 'Classes/**/*'
   s.dependency 'Flutter'

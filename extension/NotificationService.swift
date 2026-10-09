@@ -19,8 +19,10 @@ class NotificationService: UNNotificationServiceExtension {
         let group = DispatchGroup()
 
         // Receipt confirmation.
-        if let receipt = takeed["receipt_id"] as? String, let appId = takeed["app_id"] as? String, let api = takeed["api"] as? String,
-           let url = URL(string: "\(api)/api/v1/apps/\(appId)/events"), url.scheme == "https" || url.scheme == "http" {
+        // Always the Takeed service, never an address taken from the message.
+        if let receipt = takeed["receipt_id"] as? String, let appId = takeed["app_id"] as? String,
+           let encoded = appId.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed),
+           let url = URL(string: "https://takeed-iq.com/api/v1/apps/\(encoded)/events") {
             var req = URLRequest(url: url, timeoutInterval: 10)
             req.httpMethod = "POST"
             req.setValue("application/json", forHTTPHeaderField: "Content-Type")

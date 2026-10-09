@@ -1,3 +1,9 @@
+## 2.0.0
+
+- The SDK talks only to Takeed at `https://takeed-iq.com`. `initialize` no longer takes `apiUrl`:
+  call `Takeed.initialize(appId)` (and `branch:` if you use branches).
+- Delivery receipts and clicks always go to `takeed-iq.com`, never to an address in the message.
+
 ## 1.0.0
 
 - First release.

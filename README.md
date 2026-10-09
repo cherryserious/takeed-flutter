@@ -1,6 +1,6 @@
 # takeed
 
-Push notifications for Flutter apps, sent through [Takeed](https://github.com/cherryserious/takeed-flutter).
+Push notifications for Flutter apps on [Takeed](https://takeed-iq.com).
 Android goes through Firebase Cloud Messaging and iOS through APNs directly, with images and
 action buttons on both.
 
@@ -11,12 +11,12 @@ Moving an app over is mostly a rename.
 
 ```yaml
 dependencies:
-  takeed: ^1.0.0
+  takeed: ^2.0.0
 ```
 
 ## Before you start
 
-In the Takeed dashboard, open your app → **Push** tab → **Firebase & Apple keys** → **Add key**:
+In the [Takeed dashboard](https://takeed-iq.com), open your app → **Push** tab → **Firebase & Apple keys** → **Add key**:
 
 - **Android:** the Firebase service account JSON (Firebase console → Project settings → Service
   accounts → Generate new private key). Keep your app's `google-services.json` and the
@@ -34,12 +34,12 @@ import 'package:takeed/takeed.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await Takeed.initialize('YOUR-APP-ID', apiUrl: 'https://your-takeed-server');
+  await Takeed.initialize('YOUR-APP-ID');
   runApp(const MyApp());
 }
 ```
 
-`initialize` registers the device. Pass `branch: 'north'` to tie it to one of the app's branches,
+`initialize` registers the device with Takeed (`https://takeed-iq.com`; the SDK talks to nothing else). Pass `branch: 'north'` to tie it to one of the app's branches,
 so notifications sent to that branch reach it.
 
 ## Permission, users and tags
@@ -89,7 +89,7 @@ Images, action buttons and delivery receipts on iOS need a Notification Service 
 
 | OneSignal | Takeed |
 |---|---|
-| `OneSignal.initialize(appId)` | `await Takeed.initialize(appId, apiUrl: ...)` |
+| `OneSignal.initialize(appId)` | `await Takeed.initialize(appId)` |
 | `OneSignal.login(id)` | `Takeed.login(id)` |
 | `OneSignal.Notifications.*` | `Takeed.Notifications.*` |
 | `OneSignal.User.*` | `Takeed.User.*` |
@@ -99,4 +99,4 @@ users update to the version with this package.
 
 ## License
 
-MIT
+MIT. The SDK is open source; the Takeed service it connects to is not.
