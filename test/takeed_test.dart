@@ -175,4 +175,110 @@ void main() {
     expect(requests.where((r) => r.method == 'POST').length, 2);
     expect(Takeed.User.pushSubscription.id, 'sub-2');
   });
+
+  group('Firebase settings from Takeed (no google-services.json in the app)', () {
+    late List<String> nativeCalls;
+    late Map<String, dynamic>? configured;
+    late Object? firebase;
+    late bool configFails;
+    late bool tokenFails;
+
+    setUp(() {
+      nativeCalls = [];
+      configured = null;
+      firebase = {
+        'project_id': 'shop-firebase',
+        'project_number': '123456789012',
+        'storage_bucket': 'shop-firebase.firebasestorage.app',
+        'app_id': '1:123456789012:android:abc',
+        'api_key': 'AIzaKey',
+      };
+      configFails = false;
+      tokenFails = false;
+
+      TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger.setMockMethodCallHandler(channel, (call) async {
+        nativeCalls.add(call.method);
+        switch (call.method) {
+          case 'androidPackage':
+            return 'com.shop.app';
+          case 'configureFirebase':
+            configured = Map<String, dynamic>.from(call.arguments as Map);
+            return true;
+          case 'pushToken':
+            if (tokenFails) throw PlatformException(code: 'firebase_missing', message: 'No Firebase settings');
+            return {'type': 'android', 'token': 'fcm-token-123', 'config_identifier': 'shop-firebase'};
+          case 'permission':
+            return true;
+          case 'deviceInfo':
+            return <String, dynamic>{};
+        }
+        return null;
+      });
+
+      final client = MockClient((request) async {
+        requests.add(request);
+        if (request.url.path.endsWith('/sdk-config')) {
+          if (configFails) return http.Response('oops', 500);
+          return http.Response(jsonEncode({'app_id': 'app-1', 'firebase': firebase}), 200);
+        }
+        return http.Response(jsonEncode({'id': 'sub-1', 'user_id': 'user-1'}), 201);
+      });
+      Takeed.debugReset(
+          native: TakeedNative(channel),
+          api: TakeedApi(baseUrl: 'https://takeed.test', appId: 'app-1', client: client));
+    });
+
+    test('fetches the settings for its package and branch, starts Firebase, then registers', () async {
+      await Takeed.initialize('app-1', branch: 'north');
+
+      expect(requests.first.method, 'GET');
+      expect(requests.first.url.toString(),
+          'https://takeed.test/api/v1/apps/app-1/sdk-config?package=com.shop.app&branch=north');
+      expect(configured, firebase);
+      expect(nativeCalls.indexOf('configureFirebase'), lessThan(nativeCalls.indexOf('pushToken')));
+      expect(requests.last.url.path, '/api/v1/apps/app-1/subscriptions');
+      expect(body(requests.last), containsPair('config_identifier', 'shop-firebase'));
+    });
+
+    test('still registers with the settings saved last time when Takeed cannot be reached', () async {
+      configFails = true;
+      await Takeed.initialize('app-1');
+
+      expect(configured, isNull);
+      expect(nativeCalls, contains('pushToken'));
+      expect(requests.last.url.path, '/api/v1/apps/app-1/subscriptions');
+    });
+
+    test('does not start Firebase when the dashboard has no google-services.json for the package', () async {
+      firebase = null;
+      await Takeed.initialize('app-1');
+
+      expect(nativeCalls, isNot(contains('configureFirebase')));
+      expect(nativeCalls, contains('pushToken'));
+    });
+
+    test('a device without Firebase settings does not register and does not crash', () async {
+      tokenFails = true;
+      await Takeed.initialize('app-1');
+
+      expect(requests.where((r) => r.url.path.endsWith('/subscriptions')), isEmpty);
+      expect(Takeed.User.pushSubscription.id, isNull);
+    });
+
+    test('iOS skips Firebase entirely', () async {
+      TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger.setMockMethodCallHandler(channel, (call) async {
+        nativeCalls.add(call.method);
+        if (call.method == 'androidPackage') throw MissingPluginException();
+        if (call.method == 'pushToken') return {'type': 'ios', 'token': 'ab' * 32, 'config_identifier': 'com.shop.app'};
+        if (call.method == 'permission') return true;
+        if (call.method == 'deviceInfo') return <String, dynamic>{};
+        return null;
+      });
+      await Takeed.initialize('app-1');
+
+      expect(requests.where((r) => r.url.path.endsWith('/sdk-config')), isEmpty);
+      expect(nativeCalls, isNot(contains('configureFirebase')));
+      expect(body(requests.single), containsPair('type', 'ios'));
+    });
+  });
 }

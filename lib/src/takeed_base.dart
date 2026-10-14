@@ -8,7 +8,7 @@ import 'api.dart';
 import 'models.dart';
 import 'native.dart';
 
-const _sdkVersion = 'takeed-flutter/1.0.0';
+const _sdkVersion = 'takeed-flutter/2.1.0';
 const _sessionGap = Duration(minutes: 30);
 
 class _Keys {
@@ -82,8 +82,35 @@ class Takeed {
 
   // --- internals ---
 
+  /// On Android, Firebase starts from the settings uploaded to Takeed (the app has no
+  /// google-services.json). Fetched on every start so a changed project is picked up; when
+  /// Takeed can't be reached, the settings saved last time are used.
+  static Future<void> _setupFirebase() async {
+    final package = await _native.androidPackage();
+    if (package == null) return;
+    try {
+      final config = await _api!.config(package: package, branch: _branch);
+      final firebase = config['firebase'];
+      if (firebase is Map) {
+        await _native.configureFirebase(Map<String, dynamic>.from(firebase));
+      } else {
+        debugPrint('Takeed: no Firebase settings for $package. '
+            "Add google-services.json to the app's Firebase key in the Takeed dashboard.");
+      }
+    } catch (e) {
+      debugPrint('Takeed: could not get Firebase settings: $e');
+    }
+  }
+
   static Future<void> _register({String? token}) async {
-    final push = await _native.pushToken();
+    if (token == null) await _setupFirebase();
+    Map<String, dynamic>? push;
+    try {
+      push = await _native.pushToken();
+    } on PlatformException catch (e) {
+      debugPrint('Takeed: no push token: ${e.message}');
+      return;
+    }
     if (push == null || (push['token'] ?? '').toString().isEmpty) return;
     if (token != null) push['token'] = token;
 

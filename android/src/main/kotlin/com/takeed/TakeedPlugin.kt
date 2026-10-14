@@ -12,8 +12,6 @@ import android.os.Looper
 import androidx.core.app.ActivityCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.ContextCompat
-import com.google.firebase.FirebaseApp
-import com.google.firebase.messaging.FirebaseMessaging
 import io.flutter.embedding.engine.plugins.FlutterPlugin
 import io.flutter.embedding.engine.plugins.activity.ActivityAware
 import io.flutter.embedding.engine.plugins.activity.ActivityPluginBinding
@@ -89,6 +87,8 @@ class TakeedPlugin : FlutterPlugin, MethodChannel.MethodCallHandler, ActivityAwa
                 Store.configure(ctx, call.argument<String>("app_id") ?: "")
                 result.success(null)
             }
+            "androidPackage" -> result.success(ctx.packageName)
+            "configureFirebase" -> configureFirebase(ctx, call, result)
             "pushToken" -> pushToken(result)
             "permission" -> result.success(NotificationManagerCompat.from(ctx).areNotificationsEnabled())
             "requestPermission" -> requestPermission(ctx, result)
@@ -104,13 +104,24 @@ class TakeedPlugin : FlutterPlugin, MethodChannel.MethodCallHandler, ActivityAwa
         }
     }
 
+    /** Saves the Firebase settings Takeed sent for this app and starts Firebase with them. */
+    private fun configureFirebase(ctx: Context, call: MethodCall, result: MethodChannel.Result) {
+        val settings = FirebaseSetup.Settings(
+            projectId = call.argument<String>("project_id") ?: return result.error("bad_settings", "project_id missing", null),
+            appId = call.argument<String>("app_id") ?: return result.error("bad_settings", "app_id missing", null),
+            apiKey = call.argument<String>("api_key") ?: return result.error("bad_settings", "api_key missing", null),
+            senderId = call.argument<String>("project_number") ?: return result.error("bad_settings", "project_number missing", null),
+            storageBucket = call.argument<String>("storage_bucket"),
+        )
+        Store.saveFirebase(ctx, settings)
+        result.success(FirebaseSetup.app(ctx) != null)
+    }
+
     private fun pushToken(result: MethodChannel.Result) {
-        val projectId = try {
-            FirebaseApp.getInstance().options.projectId
-        } catch (e: IllegalStateException) {
-            return result.error("firebase_missing", "Firebase is not configured (google-services.json).", null)
-        }
-        FirebaseMessaging.getInstance().token.addOnCompleteListener { task ->
+        val app = FirebaseSetup.app(context!!)
+            ?: return result.error("firebase_missing", "No Firebase settings from Takeed yet: add google-services.json to the app's Firebase key in the dashboard.", null)
+        val projectId = app.options.projectId
+        FirebaseSetup.messaging(app).token.addOnCompleteListener { task ->
             main.post {
                 if (task.isSuccessful && task.result != null) {
                     Store.saveToken(context!!, task.result)

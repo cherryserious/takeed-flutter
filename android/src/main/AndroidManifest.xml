@@ -12,6 +12,13 @@
             </intent-filter>
         </service>
 
+        <!-- Starts Firebase from the settings Takeed sent, at process start (after Firebase's own provider). -->
+        <provider
+            android:name="com.takeed.TakeedInitProvider"
+            android:authorities="${applicationId}.takeedinitprovider"
+            android:exported="false"
+            android:initOrder="99" />
+
         <!-- Invisible activity that handles notification taps and button presses (Android 12+ forbids trampolines through services). -->
         <activity
             android:name="com.takeed.NotificationOpenActivity"

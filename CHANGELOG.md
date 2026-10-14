@@ -1,3 +1,10 @@
+## 2.1.0
+
+- Android apps no longer need `google-services.json` or the Google services Gradle plugin: upload
+  the file in the Takeed dashboard and the SDK starts Firebase from those settings, including when a
+  message wakes a closed app. Apps that already use Firebase with their own file keep working.
+- Clearer messages when the Firebase settings or a push token are missing.
+
 ## 2.0.0
 
 - The SDK talks only to Takeed at `https://takeed-iq.com`. `initialize` no longer takes `apiUrl`:

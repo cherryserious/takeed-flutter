@@ -7,6 +7,19 @@ class TakeedNative {
 
   final MethodChannel channel;
 
+  /// The Android package name, or null on iOS (which doesn't use Firebase).
+  Future<String?> androidPackage() async {
+    try {
+      return await channel.invokeMethod<String>('androidPackage');
+    } on MissingPluginException {
+      return null;
+    }
+  }
+
+  /// Hands the Firebase settings from Takeed to Android, which saves them and starts Firebase.
+  Future<bool> configureFirebase(Map<String, dynamic> settings) async =>
+      await channel.invokeMethod<bool>('configureFirebase', settings) ?? false;
+
   /// {type: android|ios, token, config_identifier, apns_sandbox}
   Future<Map<String, dynamic>?> pushToken() async {
     final result = await channel.invokeMethod<Map<dynamic, dynamic>>('pushToken');

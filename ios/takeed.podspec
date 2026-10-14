@@ -1,6 +1,6 @@
 Pod::Spec.new do |s|
   s.name             = 'takeed'
-  s.version          = '2.0.0'
+  s.version          = '2.1.0'
   s.summary          = 'Takeed push notifications for Flutter (APNs directly).'
   s.homepage         = 'https://takeed-iq.com'
   s.license          = { :type => 'MIT', :file => '../LICENSE' }

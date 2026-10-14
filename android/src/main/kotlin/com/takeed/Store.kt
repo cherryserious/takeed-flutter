@@ -18,6 +18,28 @@ internal object Store {
 
     fun appId(context: Context): String? = prefs(context).getString("app_id", null)
 
+    /** Firebase settings from Takeed; saved so a cold start can start Firebase before Flutter runs. */
+    fun saveFirebase(context: Context, settings: FirebaseSetup.Settings) {
+        prefs(context).edit()
+            .putString("fb_project_id", settings.projectId)
+            .putString("fb_app_id", settings.appId)
+            .putString("fb_api_key", settings.apiKey)
+            .putString("fb_sender_id", settings.senderId)
+            .putString("fb_storage_bucket", settings.storageBucket)
+            .apply()
+    }
+
+    fun firebase(context: Context): FirebaseSetup.Settings? {
+        val p = prefs(context)
+        return FirebaseSetup.Settings(
+            projectId = p.getString("fb_project_id", null) ?: return null,
+            appId = p.getString("fb_app_id", null) ?: return null,
+            apiKey = p.getString("fb_api_key", null) ?: return null,
+            senderId = p.getString("fb_sender_id", null) ?: return null,
+            storageBucket = p.getString("fb_storage_bucket", null),
+        )
+    }
+
     fun saveToken(context: Context, token: String) {
         prefs(context).edit().putString("token", token).apply()
     }
